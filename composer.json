@@ -40,5 +40,6 @@
 	],
 	"conflict": {
 		"chrisboulton/php-resque": "*"
-	}
+	},
+     "minimum-stability": "dev"
 }
