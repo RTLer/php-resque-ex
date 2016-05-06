@@ -1,4 +1,7 @@
 <?php
+namespace PhpResque\Resque\Job;
+use PhpResque\Resque;
+
 /**
  * Status tracker/information for a job.
  *
@@ -6,7 +9,7 @@
  * @author		Chris Boulton <chris@bigcommerce.com>
  * @license		http://www.opensource.org/licenses/mit-license.php
  */
-class Resque_Job_Status
+class Status
 {
 	const STATUS_WAITING = 1;
 	const STATUS_RUNNING = 2;
@@ -47,6 +50,7 @@ class Resque_Job_Status
 	 * all necessary keys in Redis to monitor the status of a job.
 	 *
 	 * @param string $id The ID of the job to monitor the status of.
+	 * @param int $status
 	 */
 	public static function create($id, $status = self::STATUS_WAITING)
 	{
@@ -82,7 +86,7 @@ class Resque_Job_Status
 	/**
 	 * Update the status indicator for the current job with a new status.
 	 *
-	 * @param int The status of the job (see constants in Resque_Job_Status)
+	 * @param int $status The status of the job (see constants in Resque_Job_Status)
 	 */
 	public function update($status)
 	{
