@@ -1,4 +1,6 @@
 <?php
+use PhpResque\Resque\Redis\RedisApi;
+
 /**
  * Resque test case class. Contains setup and teardown methods.
  *
@@ -6,9 +8,12 @@
  * @author		Chris Boulton <chris@bigcommerce.com>
  * @license		http://www.opensource.org/licenses/mit-license.php
  */
-class Resque_Tests_TestCase extends PHPUnit_Framework_TestCase
+class TestCase extends PHPUnit_Framework_TestCase
 {
 	protected $resque;
+	/**
+	 * @var RedisApi
+	 */
 	protected $redis;
 
 	public function setUp()
@@ -21,6 +26,6 @@ class Resque_Tests_TestCase extends PHPUnit_Framework_TestCase
 
 
 		// Flush redis
-		$this->redis->flushAll();
+		$this->redis->flushall();
 	}
 }

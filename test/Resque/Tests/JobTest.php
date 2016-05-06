@@ -1,4 +1,10 @@
 <?php
+use PhpResque\Resque;
+use PhpResque\Resque\Job;
+use PhpResque\Resque\Stat;
+use PhpResque\Resque\Worker;
+
+
 require_once dirname(__FILE__) . '/bootstrap.php';
 
 /**
@@ -8,8 +14,11 @@ require_once dirname(__FILE__) . '/bootstrap.php';
  * @author        Chris Boulton <chris@bigcommerce.com>
  * @license        http://www.opensource.org/licenses/mit-license.php
  */
-class Resque_Tests_JobTest extends Resque_Tests_TestCase
+class Resque_Tests_JobTest extends TestCase
 {
+	/**
+	 * @var PhpResque\Resque\Worker
+	 */
 	protected $worker;
 
 	public function setUp()
@@ -17,7 +26,7 @@ class Resque_Tests_JobTest extends Resque_Tests_TestCase
 		parent::setUp();
 
 		// Register a worker to test with
-		$this->worker = new Resque_Worker('jobs');
+		$this->worker = new Worker('jobs');
 		$this->worker->registerWorker();
 	}
 
@@ -30,7 +39,7 @@ class Resque_Tests_JobTest extends Resque_Tests_TestCase
 	{
 		Resque::enqueue('jobs', 'Test_Job');
 
-		$job = Resque_Job::reserve('jobs');
+		$job = Job::reserve('jobs');
 		if ($job == false) {
 			$this->fail('Job could not be reserved.');
 		}
@@ -62,7 +71,7 @@ class Resque_Tests_JobTest extends Resque_Tests_TestCase
 			],
 		];
 		Resque::enqueue('jobs', 'Test_Job', $args);
-		$job = Resque_Job::reserve('jobs');
+		$job = Job::reserve('jobs');
 
 		$this->assertEquals($args, $job->getArguments());
 	}
@@ -70,8 +79,8 @@ class Resque_Tests_JobTest extends Resque_Tests_TestCase
 	public function testAfterJobIsReservedItIsRemoved()
 	{
 		Resque::enqueue('jobs', 'Test_Job');
-		Resque_Job::reserve('jobs');
-		$this->assertFalse(Resque_Job::reserve('jobs'));
+		Job::reserve('jobs');
+		$this->assertFalse((bool)Job::reserve('jobs'));
 	}
 
 	public function testRecreatedJobMatchesExistingJob()
@@ -89,12 +98,12 @@ class Resque_Tests_JobTest extends Resque_Tests_TestCase
 		];
 
 		Resque::enqueue('jobs', 'Test_Job', $args);
-		$job = Resque_Job::reserve('jobs');
+		$job = Job::reserve('jobs');
 
 		// Now recreate it
 		$job->recreate();
 
-		$newJob = Resque_Job::reserve('jobs');
+		$newJob = Job::reserve('jobs');
 		$this->assertEquals($job->payload['class'], $newJob->payload['class']);
 		$this->assertEquals($job->payload['args'], $newJob->getArguments());
 	}
@@ -107,17 +116,17 @@ class Resque_Tests_JobTest extends Resque_Tests_TestCase
 			'id'    => 'randomId',
 			'args'  => null,
 		];
-		$job = new Resque_Job('jobs', $payload);
+		$job = new Job('jobs', $payload);
 		$job->worker = $this->worker;
 
 		$this->worker->perform($job);
 
-		$this->assertEquals(1, Resque_Stat::get('failed'));
-		$this->assertEquals(1, Resque_Stat::get('failed:' . $this->worker));
+		$this->assertEquals(1, Stat::get('failed'));
+		$this->assertEquals(1, Stat::get('failed:' . $this->worker));
 	}
 
 	/**
-	 * @expectedException Resque_Exception
+	 * @expectedException PhpResque\Resque\Exception
 	 */
 	public function testJobWithoutPerformMethodThrowsException()
 	{
@@ -128,7 +137,7 @@ class Resque_Tests_JobTest extends Resque_Tests_TestCase
 	}
 
 	/**
-	 * @expectedException Resque_Exception
+	 * @expectedException PhpResque\Resque\Exception
 	 */
 	public function testInvalidJobThrowsException()
 	{
@@ -147,7 +156,7 @@ class Resque_Tests_JobTest extends Resque_Tests_TestCase
 				'somevar2',
 			],
 		];
-		$job = new Resque_Job('jobs', $payload);
+		$job = new Job('jobs', $payload);
 		$job->perform();
 
 		$this->assertTrue(Test_Job_With_SetUp::$called);
@@ -162,7 +171,7 @@ class Resque_Tests_JobTest extends Resque_Tests_TestCase
 				'somevar2',
 			],
 		];
-		$job = new Resque_Job('jobs', $payload);
+		$job = new Job('jobs', $payload);
 		$job->perform();
 
 		$this->assertTrue(Test_Job_With_TearDown::$called);

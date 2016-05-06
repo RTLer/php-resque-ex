@@ -13,17 +13,6 @@ define('TEST_MISC', realpath(CWD . '/../../misc/'));
 define('REDIS_CONF', TEST_MISC . '/redis.conf');
 
 
-
-// Change to the directory this file lives in. This is important, due to
-// how we'll be running redis.
-
-require_once CWD . '/TestCase.php';
-
-// Include Resque
-require_once RESQUE_LIB . 'Resque.php';
-require_once RESQUE_LIB . 'Resque/Worker.php';
-require_once RESQUE_LIB . 'Resque/Redis.php';
-
 // Attempt to start our own redis instance for tesitng.
 exec('which redis-server', $output, $returnVar);
 if($returnVar != 0) {
@@ -50,7 +39,7 @@ define('REDIS_HOST', 'localhost:' . $matches[1]);
 define('REDIS_DATABASE', 7);
 define('REDIS_NAMESPACE', 'testResque');
 
-Resque::setBackend(REDIS_HOST, REDIS_DATABASE, REDIS_NAMESPACE);
+\PhpResque\Resque::setBackend(REDIS_HOST, REDIS_DATABASE, REDIS_NAMESPACE);
 
 // Shutdown
 function killRedis($pid)
@@ -100,6 +89,8 @@ if(function_exists('pcntl_signal')) {
 	pcntl_signal(SIGINT, 'sigint');
 	pcntl_signal(SIGTERM, 'sigint');
 }
+
+require_once 'TestCase.php';
 
 class Test_Job
 {
