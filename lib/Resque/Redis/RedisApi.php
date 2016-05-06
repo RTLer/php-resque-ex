@@ -1,5 +1,7 @@
 <?php
-use Predis\Client as Predis;
+namespace PhpResque\Resque\Redis;
+
+use Predis\Client as PRedis;
 use Predis\Command\Processor\KeyPrefixProcessor;
 
 /**
@@ -151,7 +153,7 @@ use Predis\Command\Processor\KeyPrefixProcessor;
  *
  * @author Daniele Alessandri <suppakilla@gmail.com>
  */
-class RedisApi extends Predis
+class RedisApi extends PRedis
 {
     private static $namespace = 'resque:';
     private $prefix = null;
@@ -211,12 +213,4 @@ class RedisApi extends Predis
         return self::$namespace;
     }
 
-}
-
-class Resque_Redis extends RedisApi
-{
-    public function __construct($host, $port = 6379, $password = null)
-    {
-        parent::__construct($host, $port, 5, $password);
-    }
 }

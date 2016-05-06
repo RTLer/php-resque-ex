@@ -1,4 +1,6 @@
 <?php
+namespace PhpResque\Resque;
+
 // Third- party apps may have already loaded Resident from elsewhere
 // so lets be careful.
 if(!class_exists('RedisentCluster', false)) {
@@ -13,7 +15,7 @@ if(!class_exists('RedisentCluster', false)) {
  * @author		Chris Boulton <chris@bigcommerce.com>
  * @license		http://www.opensource.org/licenses/mit-license.php
  */
-class Resque_RedisCluster extends RedisentCluster
+class RedisCluster extends RedisentCluster
 {
     /**
      * Redis namespace
