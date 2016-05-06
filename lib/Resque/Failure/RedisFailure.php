@@ -1,4 +1,7 @@
 <?php
+namespace PhpResque\Resque\Failure;
+use PhpResque\Resque;
+
 /**
  * Redis backend for storing failed Resque jobs.
  *
@@ -7,7 +10,7 @@
  * @license		http://www.opensource.org/licenses/mit-license.php
  */
 
-class Resque_Failure_Redis implements Resque_Failure_Interface
+class RedisFailure implements FailureInterface
 {
 	/**
 	 * Initialize a failed job class and save it (where appropriate).

@@ -1,4 +1,6 @@
 <?php
+namespace PhpResque\Resque\Failure;
+
 /**
  * Interface that all failure backends should implement.
  *
@@ -6,7 +8,7 @@
  * @author		Chris Boulton <chris@bigcommerce.com>
  * @license		http://www.opensource.org/licenses/mit-license.php
  */
-interface Resque_Failure_Interface
+interface FailureInterface
 {
 	/**
 	 * Initialize a failed job class and save it (where appropriate).
@@ -20,7 +22,7 @@ interface Resque_Failure_Interface
 
     /**
      * Return details about a failed jobs
-     * @param  string   job Id
+     * @param  string $jobId
      * @return object   Object containing details of the failed job.
      */
     static public function get($jobId);
