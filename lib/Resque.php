@@ -1,12 +1,15 @@
 <?php
-require_once dirname(__FILE__) . '/Resque/Event.php';
-require_once dirname(__FILE__) . '/Resque/Exception.php';
+namespace PhpResque;
+
+use PhpResque\Resque\Event;
+use PhpResque\Resque\Job;
+use PhpResque\Resque\Redis\Redis;
 
 /**
  * Base Resque class.
  *
  * @package        Resque
- * @author        Chris Boulton <chris@bigcommerce.com>
+ * @author         Chris Boulton <chris@bigcommerce.com>
  * @license        http://www.opensource.org/licenses/mit-license.php
  */
 class Resque
@@ -14,13 +17,13 @@ class Resque
     const VERSION = '1.2.5';
 
     /**
-     * @var Resque_Redis Instance of Resque_Redis that talks to redis.
+     * @var Redis Instance of Resque_Redis that talks to redis.
      */
     public static $redis = null;
 
     /**
-     * @var mixed Host/port conbination separated by a colon, or a nested
-     * array of server swith host/port pairs
+     * @var mixed Host/port combinations separated by a colon, or a nested
+     * array of server switch host/port pairs
      */
     protected static $redisServer = null;
 
@@ -52,6 +55,8 @@ class Resque
      * @param mixed $server Host/port combination separated by a colon, or
      *                      a nested array of servers with host/port pairs.
      * @param int $database
+     * @param string $namespace
+     * @param string $password
      */
     public static function setBackend($server, $database = 0, $namespace = 'resque', $password = null)
     {
@@ -63,9 +68,9 @@ class Resque
     }
 
     /**
-     * Return an instance of the Resque_Redis class instantiated for Resque.
+     * Return an instance of the Redis class instantiated for Resque.
      *
-     * @return Resque_Redis Instance of Resque_Redis.
+     * @return Redis Instance of Redis.
      */
     public static function redis()
     {
@@ -86,14 +91,13 @@ class Resque
             $server = 'localhost:6379';
         }
 
-        require_once dirname(__FILE__) . '/Resque/Redis.php';
         $port = null;
         if (!is_array($server)) {
             if (strpos($server, 'unix:') === false) {
                 list($server, $port) = explode(':', $server);
             }
         }
-        $redisInstance = new Resque_Redis($server, $port, self::$password);
+        $redisInstance = new Redis($server, $port, self::$password);
         $redisInstance->prefix(self::$namespace);
         self::$redis = $redisInstance;
 
@@ -128,7 +132,7 @@ class Resque
     {
         $item = self::redis()->lpop('queue:' . $queue);
         if (!$item) {
-            return;
+            return null;
         }
 
         return json_decode($item, true);
@@ -153,7 +157,7 @@ class Resque
     /**
      * Return the size (number of pending jobs) of the specified queue.
      *
-     * @param $queue name of the queue to be checked for pending jobs
+     * @param string $queue name of the queue to be checked for pending jobs
      *
      * @return int The size of the queue.
      */
@@ -174,10 +178,9 @@ class Resque
      */
     public static function enqueue($queue, $class, $args = null, $trackStatus = false)
     {
-        require_once dirname(__FILE__) . '/Resque/Job.php';
-        $result = Resque_Job::create($queue, $class, $args, $trackStatus);
+        $result = Job::create($queue, $class, $args, $trackStatus);
         if ($result) {
-            Resque_Event::trigger('afterEnqueue', [
+            Event::trigger('afterEnqueue', [
                 'class' => $class,
                 'args' => $args,
                 'queue' => $queue,
@@ -191,13 +194,11 @@ class Resque
      * Reserve and return the next available job in the specified queue.
      *
      * @param string $queue Queue to fetch next available job from.
-     * @return Resque_Job Instance of Resque_Job to be processed, false if none or error.
+     * @return Job Instance of Resque_Job to be processed, false if none or error.
      */
     public static function reserve($queue)
     {
-        require_once dirname(__FILE__) . '/Resque/Job.php';
-
-        return Resque_Job::reserve($queue);
+        return Job::reserve($queue);
     }
 
     /**
@@ -272,10 +273,10 @@ class Resque
      * item can be ['class'] or ['class' => 'id'] or ['class' => {:foo => 1, :bar => 2}]
      * @private
      *
-     * @params string $string redis result in json
-     * @params $items
+     * @param string $string redis result in json
+     * @param $items
      *
-     * @return (bool)
+     * @return boolean
      */
     private static function matchItem($string, $items)
     {
@@ -311,7 +312,7 @@ class Resque
      *
      * @private
      *
-     * @params string $queue the name of the queue
+     * @param string $queue the name of the queue
      * @return integer number of deleted items belongs to this list
      */
     private static function removeList($queue)
