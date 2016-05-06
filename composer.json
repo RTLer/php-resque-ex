@@ -34,8 +34,8 @@
         "phpunit/phpunit": "~4.0"
     },
     "autoload": {
-        "psr-0": {
-            "Resque": "lib"
+        "psr-4": {
+            "PhpResque\\": "lib/"
         }
     },
     "suggest": {
